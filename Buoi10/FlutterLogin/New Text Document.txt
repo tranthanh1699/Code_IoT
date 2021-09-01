@@ -1,0 +1,345 @@
+﻿import 'package:flutter/material.dart';
+import 'package:iotmqtt/home.dart';
+import 'package:http/http.dart' as http;
+import 'package:iotmqtt/updatedatabase.dart';
+
+import 'createaccount.dart';
+
+void main()
+{
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget
+{
+  @override
+  Widget build(BuildContext context)
+  {
+    return new MaterialApp(
+      home: LoginPage(),
+    );
+  }
+}
+
+
+class LoginPage extends StatefulWidget
+{
+ @override
+ _LoginPageState createState()=> _LoginPageState();
+}
+
+
+
+class _LoginPageState extends State<LoginPage> {
+  bool _showPass = false;
+
+  TextEditingController _userController = new TextEditingController();
+  TextEditingController _passController = new TextEditingController();
+
+  var _userNameErr = "Tài khoản không hợp lệ hoặc dưới 6 kí tự";
+  var _passErr = "Mật khẩu không hợp lệ hoặc dưới 6 kí tự";
+  var _userInvalid = false;
+  var _passInvalid = false;
+
+   Future<List> _login() async{
+     final response = await http.post('http://192.168.1.25:8080//FlutterLogin/login.php', body: {
+       "username":_userController.text.trim(),
+       "password":_passController.text.trim(),
+     });
+     print(response.body);
+
+     if(response.body.indexOf("True") >= 0)
+       {
+         print('Đúng username password trong database');
+         setState(() {
+           _userInvalid = false;
+           _passInvalid = false;
+         });
+
+         if(!_userInvalid && !_passInvalid)
+         {
+           //Navigator.push(context, MaterialPageRoute(builder: gotoHome));
+
+           Navigator.push(
+               context, MaterialPageRoute(builder: (context) => HomePage())
+           );
+         }
+       }
+     else if(response.body.indexOf("False") >= 0)
+       {
+         print('Sai rồi bạn ơi');
+         setState(() {
+           _userInvalid = true;
+           _passInvalid = true;
+         });
+
+       }
+
+     /*
+     if(_userController.text.length <= 0 )
+            {
+              _userInvalid = true;
+            }
+          else
+            {
+              _userInvalid = false;
+            }
+
+          if(_passController.text.length <= 0 )
+          {
+            _passInvalid = true;
+          }
+          else
+          {
+            _passInvalid = false;
+          }
+      */
+   }
+
+  @override
+  Widget build(BuildContext context)
+  {
+      return Scaffold(
+        body: Container(
+          padding: EdgeInsets.fromLTRB(30, 0, 30, 0),
+          constraints: BoxConstraints.expand(),
+          color: Colors.white,
+          child: Column(
+
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0,0,0,10),
+                child: Container(
+                  width: 70,
+                  height: 70,
+                  padding: EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xffd8d8d8),
+                  ),
+                  child: FlutterLogo(),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0,0,0,10),
+                child: Text(
+                  'Hello\nWelcome Back',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                    fontSize: 30,
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0,0,0,10),
+                child: TextField(
+
+                  style: TextStyle(fontSize: 18, color: Colors.black),
+                  controller: _userController,
+                  decoration: InputDecoration(
+                    labelText: "USERNAME",
+                    errorText: _userInvalid ? _userNameErr : null,
+                    labelStyle: TextStyle(color: Color(0xff888888),fontSize: 15),
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0,0,0,20),
+                child: Stack(
+                  alignment: AlignmentDirectional.centerEnd,
+
+                  children: <Widget>[
+                    TextField(
+                      style: TextStyle(fontSize: 18, color: Colors.black),
+                      controller: _passController,
+                      obscureText: !_showPass,
+                      decoration: InputDecoration(
+                        labelText: "PASSWORD",
+                        errorText: _passInvalid ? _passErr : null,
+                        labelStyle: TextStyle(color: Color(0xff888888),
+						fontSize: 15,
+						),
+                      ),
+                    ),
+
+                    GestureDetector(
+                      onTap: onToggleShowPass,
+                      child: Text(
+                        _showPass ? "HIDE" :"SHOW",
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0,0,0,0),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: RaisedButton(
+                    color: Colors.blue,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+                    onPressed: onSignClicked,
+                    child: Text(
+                      "SIGN IN",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              Container(
+                height: 130,
+                width: double.infinity,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    GestureDetector(
+                      onTap: ShowPageCreateAccount,
+                      child: Text(
+                        "CREATE ACCOUNT",
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ),
+
+                    GestureDetector(
+                      onTap: ShowPageUpdatePass,
+                      child: Text(
+                        "FORGOT PASSWORD?",
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.blue,
+                        ),
+
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            ],
+          ),
+        ),
+      );
+  }
+
+  void onSignClicked()
+  {
+      setState(() {
+
+
+        if(_userController.text.length < 6 )
+        {
+          _userInvalid = true;
+        }
+        else
+        {
+          _userInvalid = false;
+        }
+
+        if(_passController.text.length < 6 )
+        {
+          _passInvalid = true;
+        }
+        else
+        {
+          _passInvalid = false;
+        }
+
+        if(_passInvalid && _userInvalid)
+          {
+
+          }
+        else if(!_userInvalid && !_passInvalid)
+          {
+            print('Chay kiểm tra database');
+            setState(() {
+              _login();
+            });
+          }
+
+          /*
+          // kiểm tra nhập đúng theo yêu cầu => kết nối dữ liệu data kiểm tra
+
+          print('CHay kiểm tra database');
+          setState(() {
+            _login();
+          });
+
+           */
+
+          /*
+          if(!_userInvalid && !_passInvalid)
+          {
+              //Navigator.push(context, MaterialPageRoute(builder: gotoHome));
+
+              Navigator.push(
+                context, MaterialPageRoute(builder: (context) => HomePage())
+              );
+          }
+          */
+
+      });
+  }
+
+  Widget gotoHome(BuildContext context)
+  {
+    return HomePage();
+  }
+
+
+  void onToggleShowPass()
+  {
+    setState(() {
+      _showPass = !_showPass;
+      print(_showPass);
+    });
+  }
+
+  void ShowPageUpdatePass()
+  {
+    print('ShowPageUpdatePass');
+
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => UpdateDataBasePage())
+    );
+  }
+
+  Widget gotoHomeUpdate(BuildContext context)
+  {
+    return UpdateDataBasePage();
+  }
+
+  void ShowPageCreateAccount()
+  {
+    print('ShowPageCreateAccount');
+
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => CreateAccountPage())
+    );
+  }
+
+  Widget gotoHomeCreate(BuildContext context)
+  {
+    return CreateAccountPage();
+  }
+}

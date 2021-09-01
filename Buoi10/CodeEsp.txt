@@ -1,0 +1,133 @@
+#include <ESP8266WiFi.h>
+#include <SoftwareSerial.h>
+#include <DNSServer.h>
+#include <ESP8266WebServer.h>
+#include <WiFiManager.h>
+#include <Ticker.h>
+Ticker ticker;
+
+const byte TX = D5;
+const byte RX = D6;
+uint8_t LED1 = 2;
+uint8_t LED2 = 16;
+SoftwareSerial mySerial = SoftwareSerial(RX, TX);
+
+//char ssid[] = "Toan Thanh";
+//char pass[] = "0967391405@";
+char ssid[] = "";
+char pass[] = "";
+int bien = 0;
+long lastMsg = 0;
+
+String inputString = "";
+bool stringComplete = false;
+
+String A = "A";
+String B = "B";
+String ChuoiSend = "";
+int bien2 = 45;
+int bien3 = 0;
+int bien1 = 0;
+void tick()
+{
+  //toggle state
+  int state = digitalRead(LED1);  // get the current state of GPIO1 pin
+  digitalWrite(LED1, !state);     // set pin to the opposite state
+}
+void configModeCallback (WiFiManager *myWiFiManager)
+{
+  Serial.println(WiFi.softAPIP());
+  //if you used auto generated SSID, print it
+  Serial.println(myWiFiManager->getConfigPortalSSID());
+  ticker.attach(0.2, tick);
+}
+void connectwifi()
+{
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void setup()
+{
+  Serial.begin(9600);
+  delay(100);
+  mySerial.begin(115200);
+  delay(100);
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  digitalWrite(LED2, HIGH);
+  delay(100);
+  //WiFi.disconnect();
+  delay(1000);
+  WiFi.begin(ssid, pass);
+  ticker.attach(0.6, tick);
+  WiFiManager wifiManager;
+  wifiManager.EC_begin();
+  wifiManager.EC_read();
+  wifiManager.setAPCallback(configModeCallback);
+  wifiManager.autoConnect("Config_WiFi", "123456789");
+  Serial.println("connected...WI-FI");
+
+
+  pinMode(D0, OUTPUT);
+  digitalWrite(LED2, LOW);
+  digitalWrite(LED1, LOW);
+  ticker.detach();
+  Serial.println("Start");
+
+}
+
+void loop()
+{
+  Read_Uart();
+
+ 
+  if (millis() - lastMsg >  5000)
+  {
+    bien3++;
+    if(bien3 >=50)
+    {
+      bien3 = 0;
+    }
+    ChuoiSend = "";
+    ChuoiSend = A + String(bien3) + B;  // A123B\n
+    //A1B\n
+    mySerial.println(ChuoiSend);
+    mySerial.flush();
+    Serial.print(bien3);
+    Serial.print(".Data gửi = ");
+    Serial.println(ChuoiSend);
+    lastMsg = millis();
+  }
+  
+}
+
+void Read_Uart()
+{
+  while (mySerial.available())
+  {
+    char inChar = (char)mySerial.read();
+    inputString += inChar;
+    if (inChar == '\n')
+    {
+      stringComplete = true;
+    }
+    if (stringComplete)
+    {
+      bien1++;
+      Serial.print(bien1);
+      Serial.print(".Data nhận = ");
+      Serial.println(inputString);     
+      inputString = "";
+      stringComplete = false;
+    }
+  }
+}

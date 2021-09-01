@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="refresh" content="3000">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+	
+	
+	
+	
+	<script>
+
+    var client = new Paho.MQTT.Client("m13.cloudmqtt.com", 30660,"web_" + parseInt(Math.random() * 100, 10));  
+	client.onConnectionLost = onConnectionLost;  
+    client.onMessageArrived = onMessageArrived; 
+	var options = { useSSL: true,userName: "eloauzoy",password: "ySMSbonhWtf1",onSuccess: onConnect  }  
+    client.connect(options);  
+	
+	 function onConnect()
+	{
+        console.log("Connect");
+        client.subscribe("ESPSEND");
+		document.getElementById('THONGBAO_KETNOI').innerHTML = "Đã Kết Nối";
+    }  
+	 function onConnectionLost(responseObject) 
+	{
+        if (responseObject.errorCode !== 0) 
+		{
+            console.log("onConnectionLost:" + responseObject.errorMessage);
+			document.getElementById('THONGBAO_KETNOI').innerHTML = "Vui Lòng F5 Website";
+        }
+    } 
+	function onMessageArrived(message) 
+	{
+        console.log("Data MQTT:" + message.payloadString);
+        var Data = message.payloadString;
+		document.getElementById('DATA_TRUNGTAM').innerHTML = Data;
+		// Kiểm tra # và * , nếu # là chế độ auto , * là manual
+		var TimThang = Data.search("#");
+		if(TimThang >= 0)
+		{
+			document.getElementById('DATA_AUTO_TAY').innerHTML = "AUTO";
+			//  #A203B500C54D1E1F211.20G0.06H7.00J1Z4
+			// Tìm các kí tự trong chuỗi MQTT A(Độ Lux Cảm Biến) B(Độ Lux Cài Đặt) C (Công Suất) D (Cảm biến thứ n) E (Line đèn thứ n)F (Vol AC) G (Dòng Điện tiêu thụ của đèn n) H (Công suất của đèn thứ n) J (Chế Độ)Z
+			var TimA = Data.search("A");
+			var TimB = Data.search("B");
+			var TimC = Data.search("C");
+			var TimD = Data.search("D");
+			var TimE = Data.search("E");
+			var TimF = Data.search("F");
+			var TimG = Data.search("G");
+			var TimH = Data.search("H");
+			var TimJ = Data.search("J");
+			var TimZ = Data.search("Z");
+			
+			//Lấy data sensor
+			var Sensor = Data.slice(TimA + 1 , TimB);
+			// Lấy data độ lux đã cài đặt
+			var SetupLux = Data.slice(TimB + 1 , TimC);
+			// Lấy data công suất đang điều khiển cho đèn
+			var CongSuat = Data.slice(TimC + 1 , TimD);
+			// Lấy Data Cảm biến đèn
+			var CamBienDen = Data.slice(TimD + 1, TimE);
+			// Lấy Data Line Đèn
+			var LineDen = Data.slice(TimE + 1, TimF);
+			// Lấy Data Vol AC
+			var VolAC = Data.slice(TimF + 1, TimG);
+			// Lấy Data Dòng điện tiêu thụ đèn
+			var DongDienTieuThu = Data.slice(TimG + 1, TimH);
+			// Lấy Data Công Suất của đèn
+			var CongSuatDen = Data.slice(TimH + 1, TimJ);
+			// Lấy Data Chế độ
+			var CheDo = Data.slice(TimJ + 1, TimZ);
+			
+			// Hiển thị đúng vị trí
+			
+			//Hiển thị độ lux cảm biến.
+			 //$("#DOLUX").val(Sensor);
+			if(Sensor == -1)
+			{
+				$("#DOLUX").val("Vui Lòng Kiểm Tra Lại Cảm Biến")
+				$("#DoLuxCamBien_Manual").val("Vui Lòng Kiểm Tra Lại Cảm Biến");
+			}
+			else
+			{
+				$("#DOLUX").val(Sensor);
+				$("#DoLuxCamBien_Manual").val(Sensor);
+			}
+			 
+			 //Hiển thị độ lux đã cài đặt.
+			 $("#SETUP_LUX").val(SetupLux);
+			 
+			 //Hiển thị công suất
+			 $("#CONGSUAT").val(CongSuat);
+			 
+			 
+			 // Hiển thị cảm biến đèn n
+			 $("#Den").val(CamBienDen);
+			 
+			 
+			 // Hiển thị Line đèn của đèn n
+			 $("#Line").val(LineDen);
+			 
+			 //Hiển thị VolAC cấp cho đèn n
+			 $("#DienAp").val(VolAC);
+			 
+			 
+			 // Hiển thị Dòng điện tiêu thụ của đèn n
+			 $("#DongDien").val(DongDienTieuThu);
+			 
+			 // Hiển thị công suất của đèn n
+			 $("#CongSuat").val(CongSuatDen);
+			 
+			 // Hiển thị chế độ điều khiển
+			 
+			 
+			 if(CamBienDen == 1)
+			 {
+			    // Hiện thị Line
+				$("#Line1").val(LineDen);
+				
+				// Hiển thị Điện Áp
+				$("#DienAp1").val(VolAC);
+				
+				// Hiển thị Dòng Điện
+				$("#DongDien1").val(DongDienTieuThu);
+				
+				// Hiển thị Công Suất
+				$("#CongSuat1").val(CongSuatDen);
+				
+				// Kiểm tra và ghi chú
+			 }
+			 else if(CamBienDen == 2)
+			 {
+				// Hiện thị Line
+				$("#Line2").val(LineDen);
+				
+				// Hiển thị Điện Áp
+				$("#DienAp2").val(VolAC);
+				
+				// Hiển thị Dòng Điện
+				$("#DongDien2").val(DongDienTieuThu);
+				
+				// Hiển thị Công Suất
+				$("#CongSuat2").val(CongSuatDen);
+				
+				// Kiểm tra và ghi chú
+			 }
+			 
+			 // Hiển thị công suất Line bên manual
+			 $("#CONGSUAT_LINE1").val(CongSuat);
+			 $("#CONGSUAT_LINE2").val(CongSuat);
+		}
+		else
+		{
+			
+		    document.getElementById('DATA_AUTO_TAY').innerHTML = "MANUAL";
+		    // A [Độ Lux Cảm Biến] B [Cảm Biến] C [Line] D[VolAC] E[Dòng Điện] F [Công Suất Đèn] G [Công Suất Điều Khiển] H [Chế Độ] Z [Đếm]
+			var TimA = Data.search("A");
+			var TimB = Data.search("B");
+			var TimC = Data.search("C");
+			var TimD = Data.search("D");
+			var TimE = Data.search("E");
+			var TimF = Data.search("F");
+			var TimG = Data.search("G");
+			var TimH = Data.search("H");
+			var TimZ = Data.search("Z");
+			
+			// Lấy data cảm biến độ lux
+			var DoLuxCamBien = Data.slice(TimA + 1 , TimB); 
+			
+			// lấy data  cảm biến đèn
+			var CamBienDen = Data.slice(TimB + 1 , TimC); 
+			
+			// lấy data line đèn
+			var LineDen = Data.slice(TimC + 1 , TimD); 
+			
+			// lấy data VolAC
+			var VolAC = Data.slice(TimD + 1 , TimE); 
+			
+			// lấy data Dòng điện
+			var DongDienTieuThu = Data.slice(TimE + 1 , TimF); 
+			
+			// lấy data Công Suất đèn
+			var CongSuatDen = Data.slice(TimF + 1 , TimG); 
+			
+			// lấy data công suất điều khiển
+			var CongSuatDieuKhien = Data.slice(TimG + 1 , TimH); 
+			
+			// lấy data chế độ
+			var CheDo = Data.slice(TimH + 1 , TimZ); 
+			
+			// Hiển thị độ lux cảm biến
+			//$("#DOLUX").val(DoLuxCamBien);
+			if(DoLuxCamBien == -1)
+			{
+				$("#DOLUX").val("Vui Lòng Kiểm Tra Lại Cảm Biến")
+				$("#DoLuxCamBien_Manual").val("Vui Lòng Kiểm Tra Lại Cảm Biến")
+				
+			}
+			else
+			{
+				$("#DOLUX").val(DoLuxCamBien);
+				$("#DoLuxCamBien_Manual").val(DoLuxCamBien);
+			}
+			
+			// Hiển thị cảm biến đèn n
+			 $("#Den").val(CamBienDen);
+			 
+			 
+			 // Hiển thị Line đèn của đèn n
+			 $("#Line").val(LineDen);
+			 
+			 //Hiển thị VolAC cấp cho đèn n
+			 $("#DienAp").val(VolAC);
+			 
+			 
+			 // Hiển thị Dòng điện tiêu thụ của đèn n
+			 $("#DongDien").val(DongDienTieuThu);
+			 
+			 // Hiển thị công suất của đèn n
+			 $("#CongSuat").val(CongSuatDen);
+			
+			 if(CamBienDen == 1)
+			 {
+			    // Hiện thị Line
+				$("#Line1").val(LineDen);
+				
+				// Hiển thị Điện Áp
+				$("#DienAp1").val(VolAC);
+				
+				// Hiển thị Dòng Điện
+				$("#DongDien1").val(DongDienTieuThu);
+				
+				// Hiển thị Công Suất
+				$("#CongSuat1").val(CongSuatDen);
+				
+				// Kiểm tra và ghi chú
+			 }
+			 else if(CamBienDen == 2)
+			 {
+				// Hiện thị Line
+				$("#Line2").val(LineDen);
+				
+				// Hiển thị Điện Áp
+				$("#DienAp2").val(VolAC);
+				
+				// Hiển thị Dòng Điện
+				$("#DongDien2").val(DongDienTieuThu);
+				
+				// Hiển thị Công Suất
+				$("#CongSuat2").val(CongSuatDen);
+				
+				// Kiểm tra và ghi chú
+			 }
+			 // Kiểm tra và hiển thị công suất điều khiển đúng Line đèn
+			 if(LineDen == 1)
+			 {
+				$("#CONGSUAT_LINE1").val(CongSuatDieuKhien);
+			 }
+			 else if(LineDen == 2)
+			 {
+				$("#CONGSUAT_LINE2").val(CongSuatDieuKhien);
+			 }
+		}
+    }
+	
+	
+	 function ON1Click()
+	{
+		var DataSend = "O1Z";
+		client.send("HTMLSEND", DataSend, 2, false);
+		console.log("HTMLSEND:" + DataSend);
+		document.getElementById("lamp1").src =  "ON.png";
+    }
+	
+	
+	 function ON2Click()
+	{
+		var DataSend = "O2Z";
+		client.send("HTMLSEND", DataSend, 2, false);
+		console.log("HTMLSEND:" + DataSend);
+		document.getElementById("lamp2").src =  "ON.png";
+    }
+	
+	 function OFF2Click()
+	{
+		var DataSend = "F2Z";
+		client.send("HTMLSEND", DataSend, 2, false);
+		console.log("HTMLSEND:" + DataSend);
+		document.getElementById("lamp2").src =  "OFF.png";
+    }
+	
+	
+	 function OFF1Click()
+	{
+		var DataSend = "F1Z";
+		client.send("HTMLSEND", DataSend, 2, false);
+		console.log("HTMLSEND:" + DataSend);
+		document.getElementById("lamp1").src =  "OFF.png";
+
+	}
+	
+	 function ON3Click()
+	{
+		var DataSend = "O3Z";
+		client.send("HTMLSEND", DataSend, 2, false);
+		console.log("HTMLSEND:" + DataSend);
+		document.getElementById("lamp3").src =  "ON.png";
+    }
+	
+		 function OFF3Click()
+	{
+		var DataSend = "F3Z";
+		client.send("HTMLSEND", DataSend, 2, false);
+		console.log("HTMLSEND:" + DataSend);
+		document.getElementById("lamp3").src =  "OFF.png";
+	}
+	
+	
+	function ON4Click()
+	{
+		var DataSend = "O4Z";
+		client.send("HTMLSEND", DataSend, 2, false);
+		console.log("HTMLSEND:" + DataSend);
+		document.getElementById("lamp4").src =  "ON.png";
+    }
+	
+	function OFF4Click()
+	{
+		var DataSend = "F4Z";
+		client.send("HTMLSEND", DataSend, 2, false);
+		console.log("HTMLSEND:" + DataSend);
+		document.getElementById("lamp4").src =  "OFF.png";	
+	}
+	
+	
+	function AUTOClick()
+	{
+		var DataSend = "M1Z";
+		client.send("HTMLSEND", DataSend, 2, false);
+		console.log("HTMLSEND:" + DataSend);	
+	}
+	
+	
+	function MANUALClick()
+	{
+		var DataSend = "M0Z";
+		client.send("HTMLSEND", DataSend, 2, false);
+		console.log("HTMLSEND:" + DataSend);	
+	}
+	
+	function SEND_LUX()
+	{
+		var CheDoHeThong = document.getElementById('DATA_AUTO_TAY').innerHTML;
+		const Data_Auto = "AUTO";
+		if(CheDoHeThong == Data_Auto)
+		{
+			var data = $("#SETUP_LUX_SEND").val();
+			if(data >= 50 && data <= 2000)
+			{
+				var data1 = "A" + data + "Z";
+				client.send("HTMLSEND", data1, 2, false);
+				console.log("HTMLSEND:" + data1);				
+			}
+			else
+			{
+				alert("Vui Lòng Nhập Từ  50 Đến 2000","Thông Báo"); 
+				return;
+			}
+		}
+		else
+		{
+			alert("Bạn Đang Ở Chế Độ Manual Nên Không Thao Tác Được"); 
+			return;
+		}
+			
+	}
+	
+	function SETDIM()
+	{
+		var CheDoHeThong = document.getElementById('DATA_AUTO_TAY').innerHTML;
+		const Data_Manual = "MANUAL";
+		if(CheDoHeThong == Data_Manual)
+		{
+			var Dim = document.getElementById("get00").value;
+			var ChonLine = document.getElementById("chon").value;
+			if(ChonLine == "ALL")
+			{
+				var DataSend = "D0S" + Dim + "Z";
+				client.send("HTMLSEND", DataSend, 2, false);
+				console.log("HTMLSEND:" + DataSend);
+				
+				document.getElementById("LINE1").value = Dim + "%";
+				document.getElementById("LINE2").value = Dim + "%";
+				document.getElementById("LINE3").value = Dim + "%";
+				document.getElementById("LINE4").value = Dim + "%";
+			}
+			else
+			{
+				if(ChonLine == 1)
+				{
+					var DataSend = "D1S" + Dim + "Z";
+					client.send("HTMLSEND", DataSend, 2, false);
+					console.log("HTMLSEND:" + DataSend);
+					document.getElementById("LINE1").value = Dim + "%";
+				}
+				else if(ChonLine == 2)
+				{
+					var DataSend = "D2S" + Dim + "Z";
+					client.send("HTMLSEND", DataSend, 2, false);
+					console.log("HTMLSEND:" + DataSend);
+					document.getElementById("LINE2").value = Dim + "%";
+				}
+				else if(ChonLine == 3)
+				{
+					var DataSend = "D3S" + Dim + "Z";
+					client.send("HTMLSEND", DataSend, 2, false);
+					console.log("HTMLSEND:" + DataSend);
+					document.getElementById("LINE3").value = Dim + "%";
+				}
+				else if(ChonLine == 4)
+				{
+					var DataSend = "D4S" + Dim + "Z";
+					client.send("HTMLSEND", DataSend, 2, false);
+					console.log("HTMLSEND:" + DataSend);
+					document.getElementById("LINE4").value = Dim + "%";
+				}
+			}
+		}
+		else
+		{
+			alert("Bạn Đang Ở Chế Độ Auto Nên Không Thao Tác Được"); 
+			return;
+		}
+		
+		
+	}
+	
+	function fetch00()
+    {
+        var get00 = document.getElementById("get00").value;
+        document.getElementById("put00").value = get00 + "%";
+    }
+	
+</script>
+    	
+</head>
+
+<style>
+body {font-family: Time New Roman;}
+.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #FFCC00;
+}
+.tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+    font-size: 17px;
+}
+.tab button:hover {
+    background-color: #ddd;
+}
+.tab button.active {
+    background-color: #ccc;
+}
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+}
+.button {
+  background-color: #3366FF;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+</style>
+
+<body style= "background-color: #00FFFF;">
+    </br>
+	<center><img src = "123.jpg" width = "1000" height = "100"></center>
+	</br>
+	</br>
+    <center><h1><font size="30">  <span style = "color: red"  > <strong>GIAO DIỆN ĐIỀU KHIỂN </strong></span></font></h1> </center>
+	</br>
+	</br>
+	 <table bgcolor="#00FF00" width="1000" height="100" border="6" cellpadding="10" align="center">
+	    <tr>
+        <td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b> Kết Nối Server </b> </span> </center> </td>
+        <td colspan="1">
+			<div id= 'THONGBAO_KETNOI' > Vui Lòng Đợi Kết Nối</div>
+        </td>
+		
+     </tr>
+	 
+	 <tr>
+        <td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b> Dữ Liệu Trung Tâm </b> </span> </center> </td>
+        <td colspan="1">
+		    <div id="DATA_TRUNGTAM" > Dữ Liệu Trung Tâm </div>
+        </td>
+     </tr>
+	 
+	 
+	 <tr>
+        <td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b> Chế Độ Điều Khiển </b> </span> </center> </td>
+        <td colspan="1">
+		    <div id='DATA_AUTO_TAY' > Chế Độ	</div>
+        </td>
+     </tr>
+	 
+	 <tr>
+        <td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b> Chuyển Chế Độ </b> </span> </center> </td>
+        <td colspan="1">
+		
+			
+			<button id="btnAUTO" style="height:50px;width:100px"  class="btn btn-danger" onclick="AUTOClick()" >AUTO</button> 
+			<button id="btnMANUAL" style="height:50px;width:100px" class="btn btn-danger" onclick="MANUALClick()" >MANUAL</button> 
+			
+		
+        </td>
+     </tr>
+	 
+	 </table>
+	 </br>
+<center>	
+<center> <div class="tab">
+
+  <button class="tablinks" onclick="openCity(event, 'London')"> <font size="6">  <span style = "color: Blue"> Bật/Tắt Đèn </span> </font></button>
+  <button class="tablinks" onclick="openCity(event, 'Paris')"><font size="6"> <span style = "color: Blue">Bảng Điều Khiển Auto</span></font></button>
+  <button class="tablinks" onclick="openCity(event, 'Manual')"><font size="6"> <span style = "color: Blue">Bảng Điều Khiển Manual</span></font></button>
+  <button class="tablinks" onclick="openCity(event, 'Tokyo')"> <font size="6"><span style = "color: Blue">Giám Sát</span></font></button>
+ 
+</div>
+ </center>
+
+<div id="London" class="tabcontent"> 
+   	 <table width="1000" height="400" border="6" cellpadding="10" align="center">	 
+	 <tr>
+	      <th bgcolor="#FF9900"  colspan="5"> <center> <font size="10"> <span style = "color: red"> Điều Khiển Line Đèn</span></font></center></th>
+	 </tr>	
+	 
+	 <tr>
+        <td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Sơ đồ </b>  </span> </center> </td>
+        <td bgcolor="#00FF00" colspan="4" align="center" >  
+		      	
+              <img   src = "SoDo.png" width="600" height="200">			  
+        </td>
+				
+     </tr>
+	 
+	 <tr>
+        <td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Line 1 </b>  </span> </center> </td>
+        <td bgcolor="#00FF00" colspan="1" align="center" >  
+		      <button id="btnOn1"   type="button" class="btn btn-success" onclick="ON1Click()" >ON 1</button> 
+              <button id="btnOff1" type="button" class="btn btn-danger" onclick="OFF1Click()" >OFF 1</button>	
+              <img  id="lamp1" src = "ON.png" width="100" height="100">			  
+        </td>
+		<td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Line 2 </b>  </span> </center> </td>
+		<td bgcolor="#00FF00" colspan="2" align="center">  
+		     <button id="btnOn2" type="button" class="btn btn-success"onclick="ON2Click()">ON 2</button>	  
+	         <button id="btnOff2" type="button" class="btn btn-danger" onclick="OFF2Click()" >OFF 2</button>			 
+			 <img  id="lamp2" src = "ON.png" width="100" height="100">			
+        </td>		
+     </tr>
+	 
+	 <tr>
+        <td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Line 3 </b>  </span> </center> </td>
+        <td bgcolor="#00FF00" colspan="1" align="center">  
+		      <button id="btnOn1"   type="button" class="btn btn-success" onclick="ON3Click()" >ON 3</button> 
+              <button id="btnOff1" type="button" class="btn btn-danger" onclick="OFF3Click()" >OFF 3</button>	
+              <img id="lamp3" src = "ON.png" width="100" height="100">			  
+        </td>
+		<td bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Line 4 </b>  </span> </center> </td>
+		<td bgcolor="#00FF00" colspan="2" align="center">  
+		     <button id="btnOn2" type="button" class="btn btn-success"onclick="ON4Click()">ON 4</button>	  
+	         <button id="btnOff2" type="button" class="btn btn-danger" onclick="OFF4Click()" >OFF 4</button>			 
+			 <img id="lamp4" src = "ON.png" width="100" height="100">			
+        </td>		
+     </tr>
+
+    	 
+	 </table>	
+  
+</div>
+
+<div id="Paris" class="tabcontent">
+
+  <table width="1000" height="400" border="6" cellpadding="10" align="center">
+     <tr>
+	      <th  bgcolor="#FF9900" colspan="2"> <center> <font size="10"> <span style = "color: red"> CHẾ ĐỘ AUTO</span></font></center></th>
+	 </tr>
+	 <tr>
+	      <th bgcolor="#00FF00" colspan="2"> <center> <font size="10"> <span style = "color: red"> Hiển Thị và Cài Đặt</span></font></center></th>
+	 </tr>
+	 
+	 <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b> Độ Lux </b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+		    <input id="DOLUX" type="text" size="40" placeholder="Độ Lux Hiện Tại" >
+        </td>
+     </tr>
+	 
+	 <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b> Độ Lux Đã Cài Đặt </b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+		    <input id="SETUP_LUX" type="text" size="40" placeholder="Độ Lux Đã Cài Đặt" >
+        </td>
+     </tr>
+	 
+	 <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b> Công Suất Điều Khiển </b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+		    <input id="CONGSUAT" type="text" size="40" placeholder="Công Suất Điều Khiển" >
+        </td>
+     </tr>
+	 
+	 <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b> Cài Đặt Lux (AUTO)</b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+		    <input id="SETUP_LUX_SEND" type="text" size="40" placeholder="Cài Đặt Lux" >
+			<button id="btnSEND" type="button" class="btn btn-success" onclick = "SEND_LUX()">Send</button>
+        </td>
+     </tr>
+	 
+  
+  </table>
+  
+</div>
+<div id="Manual" class="tabcontent">
+
+
+
+
+<table width="1000" height="400" border="6" cellpadding="10" align="center">
+
+	 <tr>
+	      <th bgcolor="#FF9900" colspan="2"> <center> <font size="10"> <span style = "color: red"> CHẾ ĐỘ MANUAL</span></font></center></th>
+	 </tr>
+	 
+	  <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Độ Lux </b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+		    <input id="DoLuxCamBien_Manual" type="text" size="40" placeholder="Độ Lux Cảm Biến" >
+        </td>
+     </tr>
+	 
+	 <tr>
+	      <th bgcolor="#00FF00" colspan="2"> <center> <font size="10"> <span style = "color: red"> Công Suất Điều Khiển Từng Line</span></font></center></th>
+	 </tr>
+	 
+	 
+	 <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Line 1</b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+		    <input id="CONGSUAT_LINE1" type="text" size="40" placeholder="Công Suất Điều Khiển Line 1" >
+        </td>
+     </tr>
+	 
+	 <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Line 2</b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+		    <input id="CONGSUAT_LINE2" type="text" size="40" placeholder="Công Suất Điều Khiển Line 2" >
+        </td>
+     </tr>
+	 
+	 <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Line 3</b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+		    <input id="CONGSUAT_LINE3" type="text" size="40" placeholder="Công Suất Điều Khiển Line 3" >
+        </td>
+     </tr>
+	 
+	 <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> <center> <span style = "color: Blue"> <b>  Line 4</b> </span> </center> </td>
+        <td bgcolor="#FF00FF" colspan="1">
+		    <input id="CONGSUAT_LINE4" type="text" size="40" placeholder="Công Suất Điều Khiển Line 4" >
+        </td>
+     </tr>
+	 
+	 <tr>
+	      <th bgcolor="#00FF00" colspan="2"> <center> <font size="10"> <span style = "color: red"> Điều Khiển Công Suất Theo Line</span></font></center></th>
+	 </tr> 	 
+	 <tr>
+        <td  bgcolor="#FFFF00" colspan="1"> 
+		     
+		     <center>  
+			        <span style = "color: Blue"> <b> Chọn Line</b> </span> 
+			            <select id = "chon">
+			                <option value = "ALL">All</option>
+				            <option value = "1">1</option>
+				            <option value = "2">2</option>
+				            <option value = "3">3</option>
+				            <option value = "4">4</option>			 
+			            </select>
+			 </center>
+		</td>
+		
+		
+        <td bgcolor="#FF00FF" colspan="1">
+		    <input type = "range" style = "width:350px " min = "1" max = "100" id = "get00" step = "1" onchange= "fetch00()"/>
+			<input type = "text" size = "2" id = "put00" value = "51%"/> 
+			<button style="height:50px;width:100px" id="btnSendDim" type="button" class="btn btn-success" onclick = "SETDIM()">Set</button>
+			</br>
+			<font size="5"> <span style = "color: Blue"> Line 1  :  &nbsp </span></font>
+			<input type = "text" size = "2" id = "LINE1" placeholder = "0%"/> 
+			
+			<font size="5"> <span style = "color: Blue"> Line 2 : &nbsp </span></font>
+			<input type = "text" size = "2" id = "LINE2" placeholder = "0%"/> 
+			
+			<font size="5"> <span style = "color: Blue"> Line 3 : &nbsp </span></font>
+			<input type = "text" size = "2" id = "LINE3" placeholder = "0%"/> 
+			
+			<font size="5"> <span style = "color: Blue"> Line 4 : &nbsp </span></font>
+			<input type = "text" size = "2" id = "LINE4" placeholder = "0%"/> 			
+        </td>		
+     </tr> 
+  </table>
+</div>
+</br>
+
+
+<div id="Tokyo" class="tabcontent">
+  <table width="1000" height="400" border="6" cellpadding="10" align="center">
+  
+		<tr>
+	      <th bgcolor="#FF9900" colspan="11"> <center> <font size="10"> <span style = "color: red"> DỮ LIỆU CHUNG</span></font></center></th>
+	    </tr>
+		
+		<tr>
+	        <td bgcolor="#00FF00" colspan="11"> 
+				<span style = "color: Blue"> <b> Đèn  </b> </span>  
+				<input id="Den" type="text" size="5" placeholder="Đèn" >
+				
+				<span style = "color: Blue"> <b> Line  </b> </span>  
+				<input id="Line" type="text" size="5" placeholder="Line" >
+				
+				<span style = "color: Blue"> <b> Điện Áp  </b> </span>
+				<input id="DienAp" type="text" size="5" placeholder="Điện Áp" >
+				
+				<span style = "color: Blue"> <b> Dòng Điện  </b> </span>
+				<input id="DongDien" type="text" size="5" placeholder="Dòng Điện" >
+				
+				<span style = "color: Blue"> <b> Công Suất  </b> </span>
+				<input id="CongSuat" type="text" size="5" placeholder="Công Suất" >
+				
+				<span style = "color: Blue"> <b> Ghi Chú  </b> </span>
+				<input id="GhiChu" type="text" size="20" placeholder="Ghi Chú" >
+				
+			</td>
+	    </tr>
+		
+        <tr>
+	      <th bgcolor="#FF9900" colspan="11"> <center> <font size="6"> <span style = "color: red"> THÔNG SỐ HIỆN TẠI ĐÈN</span></font></center></th>
+	    </tr>
+		
+		
+		
+		
+		
+		<tr>
+		    <td bgcolor="#FFFF00" colspan="1">
+			     <span style = "color: Blue"> <b> Đèn 1  </b> </span>  
+			</td>
+            <td bgcolor="#00FF00" colspan="10"> 
+				
+				<span style = "color: Blue"> <b> Line  </b> </span>  
+				<input id="Line1" type="text" size="5" placeholder="Line" >
+				
+				<span style = "color: Blue"> <b> Điện Áp  </b> </span>
+				<input id="DienAp1" type="text" size="5" placeholder="Điện Áp" >
+				
+				<span style = "color: Blue"> <b> Dòng Điện  </b> </span>
+				<input id="DongDien1" type="text" size="5" placeholder="Dòng Điện" >
+				
+				<span style = "color: Blue"> <b> Công Suất  </b> </span>
+				<input id="CongSuat1" type="text" size="5" placeholder="Công Suất" >
+				
+				<span style = "color: Blue"> <b> Ghi Chú  </b> </span>
+				<input id="GhiChu1" type="text" size="20" placeholder="Ghi Chú" >
+				
+			</td>
+             
+        </tr>
+		
+		
+		<tr>
+			<td bgcolor="#FFFF00" colspan="1">
+			     <span style = "color: Blue"> <b> Đèn 2  </b> </span>  
+			</td>
+			
+            <td bgcolor="#00FF00" colspan="10"> 
+			    
+				<span style = "color: Blue"> <b> Line  </b> </span>  
+				<input id="Line2" type="text" size="5" placeholder="Line" >
+				
+				<span style = "color: Blue"> <b> Điện Áp  </b> </span>
+				<input id="DienAp2" type="text" size="5" placeholder="Điện Áp" >
+				
+				<span style = "color: Blue"> <b> Dòng Điện  </b> </span>
+				<input id="DongDien2" type="text" size="5" placeholder="Dòng Điện" >
+				
+				<span style = "color: Blue"> <b> Công Suất  </b> </span>
+				<input id="CongSuat2" type="text" size="5" placeholder="Công Suất" >
+				
+				<span style = "color: Blue"> <b> Ghi Chú  </b> </span>
+				<input id="GhiChu2" type="text" size="20" placeholder="Ghi Chú" >
+				
+			</td>
+             
+        </tr>
+		
+		
+		<tr>
+			<td bgcolor="#FFFF00" colspan="1">
+			     <span style = "color: Blue"> <b> Đèn 3  </b> </span>  
+			</td>
+			
+            <td bgcolor="#00FF00" colspan="10"> 
+			   
+				
+				<span style = "color: Blue"> <b> Line  </b> </span>  
+				<input id="Line3" type="text" size="5" placeholder="Line" >
+				
+				<span style = "color: Blue"> <b> Điện Áp  </b> </span>
+				<input id="DienAp3" type="text" size="5" placeholder="Điện Áp" >
+				
+				<span style = "color: Blue"> <b> Dòng Điện  </b> </span>
+				<input id="DongDien3" type="text" size="5" placeholder="Dòng Điện" >
+				
+				<span style = "color: Blue"> <b> Công Suất  </b> </span>
+				<input id="CongSuat3" type="text" size="5" placeholder="Công Suất" >
+				
+				<span style = "color: Blue"> <b> Ghi Chú  </b> </span>
+				<input id="GhiChu3" type="text" size="20" placeholder="Ghi Chú" >
+			</td>
+             
+        </tr>
+		
+			
+		<tr>
+			
+			<td bgcolor="#FFFF00" colspan="1">
+			     <span style = "color: Blue"> <b> Đèn 4  </b> </span>  
+			</td>
+			
+            <td bgcolor="#00FF00"colspan="10"> 
+			    
+				<span style = "color: Blue"> <b> Line  </b> </span>  
+				<input id="Line4" type="text" size="5" placeholder="Line" >
+				
+				<span style = "color: Blue"> <b> Điện Áp  </b> </span>
+				<input id="DienAp4" type="text" size="5" placeholder="Điện Áp" >
+				
+				<span style = "color: Blue"> <b> Dòng Điện  </b> </span>
+				<input id="DongDien4" type="text" size="5" placeholder="Dòng Điện" >
+				
+				<span style = "color: Blue"> <b> Công Suất  </b> </span>
+				<input id="CongSuat4" type="text" size="5" placeholder="Công Suất" >
+				
+				<span style = "color: Blue"> <b> Ghi Chú  </b> </span>
+				<input id="GhiChu4" type="text" size="20" placeholder="Ghi Chú" >
+				
+			</td>
+             
+        </tr>
+		
+		
+		
+		
+  </table> 
+</div>
+</br>
+
+<script>
+function openCity(evt, cityName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(cityName).style.display = "block";
+    evt.currentTarget.className += " active";
+	
+	//<img id = "DEN4" src = "OFF.png" width="70" height="70">
+}
+
+</script>
+
+
+</body>
+</html>	

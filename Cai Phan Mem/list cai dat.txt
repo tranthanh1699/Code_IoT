@@ -1,0 +1,28 @@
+﻿
+Link cài theo video: https://www.youtube.com/watch?v=uSJp_Pz6X2U&feature=youtu.be
+
+
+1/ arduino  link  https://www.arduino.cc/en/Main/Software 
+Click => Windows Installer, for Windows 7 and up => Click JUST DOWNLOAD
+http://arduino.esp8266.com/stable/package_esp8266com_index.json
+https://dl.espressif.com/dl/package_esp32_index.json
+
+2/ zoom: https://download.vn/huong-dan-su-dung-zoom-us-de-hoc-truc-tuyen-19620
+3/  nodepad: download.com.vn/download/notepad-plus-5271?linkid=1
+4/ node js: https://nodejs.org/en/ => Click 15.0.1 Current
+5/ xampp: https://www.apachefriends.org/index.html
+
+6/ android studio: https://developer.android.com/studio
+
+7/ https://gekorm.com/dart-windows/ tải GET DART 64 bit windows stable
+8/ https://dart.dev/get-dart click Flutter SDK chọn hệ điều hành máy
+tải flutter_windows SDK
+9/ tai genymotion https://www.genymotion.com/download/
+10/ java 64bit https://www.java.com/en/download/manual.jsp
+
+
+11/ link stm32mxcube: https://www.st.com/en/development-tools/stm32cubemx.html
+12/ driver board stm32 : https://www.st.com/en/development-tools/stsw-link004.html
+13/ KeilC5 => có tệp đính kèm
+
+

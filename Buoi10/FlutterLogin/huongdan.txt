@@ -1,0 +1,13 @@
+﻿Bước 1: Cài đặt Xampp
+Bước 2: Khởi động start Apache , MySql ( error thì search youtube)
+Bước 3: mở web đánh http://localhost:8080/ => vô được trang xampp là localhost open thành công
+Bước 4: mở web đánh http://localhost:8080/phpmyadmin/
+Bước 5: tạo file , tìm mục cài đặt xampp trong ổ mới cài => htdocs => tạo folder tên laptrinh >= tạo file tenfile.html trong folder laptrinh => chạy file mở web đánh 
+http://localhost:80//FlutterLogin/conn.php
+
+http://localhost:80//FlutterLogin/login.php
+
+http://localhost:80//FlutterLogin/updateaccount.php
+
+
+http://localhost:80//FlutterLogin/createaccount.php

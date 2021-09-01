@@ -1,0 +1,37 @@
+tạo server
+Bước 1: tạo folder tên serverjs
+Bước 2: mở CMD
+// thao tác hết trong CMD
+
+Bước 3: cd => kéo thư mục folder vào cmd
+
+bắt đầu tạo server
+
+npm init =>enter 
+(serverjs) demo => enter
+version => enter
+description => enter
+entry point => enter
+test command => enter
+git repository => enter
+keyword => enter
+author => đặt tên toannv10291 =>enter
+license => enter
+Is this OK? (yes) => gõ yes => enter
+
+Bước 4: cài thư viện hỗ trợ
+
+npm install express ejs =>enter
+npm install socket.io
+npm install socket.io json-socket
+npm install mysql
+npm install  -g json
+
+Bước 5: tạo folder trong serverjs  gồm public ,views
+Bước 6: tạo file index.js trong folder serverjs
+
+
+mở mysql xampp 
+
+http://localhost:80/phpmyadmin/
+
